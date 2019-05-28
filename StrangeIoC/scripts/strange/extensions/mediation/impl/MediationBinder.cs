@@ -28,7 +28,6 @@ using System;
 using System.Linq;
 using UnityEngine;
 using strange.extensions.mediation.api;
-using System.Collections.Generic;
 
 namespace strange.extensions.mediation.impl
 {
@@ -38,10 +37,12 @@ namespace strange.extensions.mediation.impl
 		{
 		}
 
-		protected override void GetViews(IView view, List<IView> result)
+		protected override IView[] GetViews(IView view)
 		{
-			result.Clear();
-			((MonoBehaviour) view).GetComponentsInChildren<IView>(true, result);
+			MonoBehaviour mono = view as MonoBehaviour;
+			Component[] components = mono.GetComponentsInChildren (typeof(IView), true);
+			IView[] views = components.Cast<IView>().ToArray();
+			return views;
 		}
 
 		protected override bool HasMediator(IView view, Type mediatorType)
