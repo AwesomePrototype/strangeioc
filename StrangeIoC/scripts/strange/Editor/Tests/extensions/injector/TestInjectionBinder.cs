@@ -7,6 +7,7 @@ using strange.extensions.pool.api;
 using strange.extensions.pool.impl;
 using strange.framework.api;
 using System.Collections.Generic;
+using System.Reflection;
 using strange.framework.impl;
 
 namespace strange.unittests
@@ -15,10 +16,12 @@ namespace strange.unittests
 	public class TestinjectionBinder
 	{
 		IInjectionBinder binder;
+		private string assemblyName;
 
 		[SetUp]
 		public void SetUp()
 		{
+			assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 			binder = new InjectionBinder ();
 		}
 
@@ -389,7 +392,7 @@ namespace strange.unittests
 		[Test]
 		public void TestSimpleRuntimeInjection()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\"}}]";
 
 			binder.ConsumeBindings (jsonString);
 
@@ -419,7 +422,7 @@ namespace strange.unittests
 		[Test]
 		public void TestNamedRuntimeInjection()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\",\"ToName\":\"Test1\",\"Options\":\"ToSingleton\"}, {\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\",\"ToName\":\"Test2\",\"Options\":\"ToSingleton\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\",\"ToName\":\"Test1\",\"Options\":\"ToSingleton\"}}, {{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\",\"ToName\":\"Test2\",\"Options\":\"ToSingleton\"}}]";
 
 			binder.ConsumeBindings (jsonString);
 
@@ -447,7 +450,7 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeInjectionBindToSelf()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.SimpleInterfaceImplementer\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\"}}]";
 
 			binder.ConsumeBindings (jsonString);
 
@@ -473,7 +476,7 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeInjectionSingleton()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\", \"Options\":\"ToSingleton\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\", \"Options\":\"ToSingleton\"}}]";
 
 			binder.ConsumeBindings (jsonString);
 
@@ -503,7 +506,7 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeInjectionCrossContext()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\", \"Options\":[\"ToSingleton\",\"Weak\",\"CrossContext\"]}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\", \"Options\":[\"ToSingleton\",\"Weak\",\"CrossContext\"]}}]";
 
 			binder.ConsumeBindings (jsonString);
 
@@ -530,7 +533,7 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimePolymorphism()
 		{
-			string jsonString = "[{\"Bind\":[\"strange.unittests.ISimpleInterface\",\"strange.unittests.IAnotherSimpleInterface\"],\"To\":\"strange.unittests.PolymorphicClass\"}]";
+			string jsonString = $"[{{\"Bind\":[\"strange.unittests.ISimpleInterface,{assemblyName}\",\"strange.unittests.IAnotherSimpleInterface,{assemblyName}\"],\"To\":\"strange.unittests.PolymorphicClass,{assemblyName}\"}}]";
 
 			binder.ConsumeBindings (jsonString);
 
@@ -560,7 +563,7 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeExceptionTooManyValues()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":[\"strange.unittests.SimpleInterfaceImplementer\",\"strange.unittests.PolymorphicClass\"]}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":[\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\",\"strange.unittests.PolymorphicClass\"]}}]";
 
 			TestDelegate testDelegate = delegate
 			{
@@ -580,7 +583,7 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeExceptionUnqualifiedKeyException()
 		{
-			string jsonString = "[{\"Bind\":\"ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\"}]";
+			string jsonString = $"[{{\"Bind\":\"ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\"}}]";
 			TestDelegate testDelegate = delegate
 			{
 				binder.ConsumeBindings(jsonString);
@@ -592,7 +595,7 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeExceptionUnqualifiedValueException()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"SimpleInterfaceImplementer\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"SimpleInterfaceImplementer,{assemblyName}\"}}]";
 			TestDelegate testDelegate = delegate
 			{
 				binder.ConsumeBindings(jsonString);
@@ -629,10 +632,10 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeSimpleSupplyBinding()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ClassToBeInjected\",\"To\":\"strange.unittests.ClassToBeInjected\"},";
-			jsonString += "{\"Bind\":\"strange.unittests.ClassToBeInjected\",\"To\":\"strange.unittests.ExtendsClassToBeInjected\",\"ToName\": 1,\"Options\": [{\"SupplyTo\": \"strange.unittests.ConstructorInjectsClassToBeInjected\"}]},";
-			jsonString += "{\"Bind\":\"strange.unittests.InjectsClassToBeInjected\",\"To\": \"strange.unittests.InjectsClassToBeInjected\"},";
-			jsonString += "{\"Bind\":\"strange.unittests.ConstructorInjectsClassToBeInjected\",\"To\": \"strange.unittests.ConstructorInjectsClassToBeInjected\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ClassToBeInjected,{assemblyName}\",\"To\":\"strange.unittests.ClassToBeInjected,{assemblyName}\"}},";
+			jsonString += $"{{\"Bind\":\"strange.unittests.ClassToBeInjected,{assemblyName}\",\"To\":\"strange.unittests.ExtendsClassToBeInjected,{assemblyName}\",\"ToName\": 1,\"Options\": [{{\"SupplyTo\": \"strange.unittests.ConstructorInjectsClassToBeInjected,{assemblyName}\"}}]}},";
+			jsonString += $"{{\"Bind\":\"strange.unittests.InjectsClassToBeInjected,{assemblyName}\",\"To\": \"strange.unittests.InjectsClassToBeInjected,{assemblyName}\"}},";
+			jsonString += $"{{\"Bind\":\"strange.unittests.ConstructorInjectsClassToBeInjected,{assemblyName}\",\"To\": \"strange.unittests.ConstructorInjectsClassToBeInjected,{assemblyName}\"}}]";
 
 			binder.ConsumeBindings (jsonString);
 
@@ -678,11 +681,11 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeSupplyBindingWithArray()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.ClassToBeInjected\",\"To\":\"strange.unittests.ExtendsClassToBeInjected\",";
-			jsonString += "\"Options\": [\"ToSingleton\",{\"SupplyTo\": [\"strange.unittests.HasANamedInjection\",\"strange.unittests.ConstructorInjectsClassToBeInjected\",\"strange.unittests.InjectsClassToBeInjected\"]}]},";
-			jsonString += "{\"Bind\":\"strange.unittests.HasANamedInjection\",\"To\":\"strange.unittests.HasANamedInjection\"},";
-			jsonString += "{\"Bind\":\"strange.unittests.ConstructorInjectsClassToBeInjected\",\"To\":\"strange.unittests.ConstructorInjectsClassToBeInjected\"},";
-			jsonString += "{\"Bind\":\"strange.unittests.InjectsClassToBeInjected\",\"To\":\"strange.unittests.InjectsClassToBeInjected\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.ClassToBeInjected,{assemblyName}\",\"To\":\"strange.unittests.ExtendsClassToBeInjected,{assemblyName}\",";
+			jsonString += $"\"Options\": [\"ToSingleton\",{{\"SupplyTo\": [\"strange.unittests.HasANamedInjection,{assemblyName}\",\"strange.unittests.ConstructorInjectsClassToBeInjected,{assemblyName}\",\"strange.unittests.InjectsClassToBeInjected,{assemblyName}\"]}}]}},";
+			jsonString += $"{{\"Bind\":\"strange.unittests.HasANamedInjection,{assemblyName}\",\"To\":\"strange.unittests.HasANamedInjection,{assemblyName}\"}},";
+			jsonString += $"{{\"Bind\":\"strange.unittests.ConstructorInjectsClassToBeInjected,{assemblyName}\",\"To\":\"strange.unittests.ConstructorInjectsClassToBeInjected,{assemblyName}\"}},";
+			jsonString += $"{{\"Bind\":\"strange.unittests.InjectsClassToBeInjected,{assemblyName}\",\"To\":\"strange.unittests.InjectsClassToBeInjected,{assemblyName}\"}}]";
 
 			binder.ConsumeBindings (jsonString);
 

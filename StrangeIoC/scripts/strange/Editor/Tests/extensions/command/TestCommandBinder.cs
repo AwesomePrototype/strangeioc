@@ -15,10 +15,12 @@ namespace strange.unittests
 	{
 		IInjectionBinder injectionBinder;
 		ICommandBinder commandBinder;
+		private string assemblyName;
 
 		[SetUp]
 		public void SetUp()
 		{
+			assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
 			injectionBinder = new InjectionBinder();
 			injectionBinder.Bind<IInjectionBinder> ().Bind<IInstanceProvider> ().ToValue (injectionBinder);
 			injectionBinder.Bind<ICommandBinder> ().To<CommandBinder> ().ToSingleton ();
@@ -158,10 +160,10 @@ namespace strange.unittests
 		[Test]
 		public void TestSimpleRuntimeCommandBinding()
 		{
-			string jsonInjectorString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\", \"Options\":\"ToSingleton\"}]";
+			string jsonInjectorString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\", \"Options\":\"ToSingleton\"}}]";
 			injectionBinder.ConsumeBindings (jsonInjectorString);
 
-			string jsonCommandString = "[{\"Bind\":\"strange.unittests.SomeEnum.ONE\",\"To\":\"strange.unittests.CommandWithInjection\"}]";
+			string jsonCommandString = $"[{{\"Bind\":\"strange.unittests.SomeEnum,{assemblyName}.ONE\",\"To\":\"strange.unittests.CommandWithInjection,{assemblyName}\"}}]";
 			commandBinder.ConsumeBindings(jsonCommandString);
 			commandBinder.ReactTo (SomeEnum.ONE);
 
@@ -172,10 +174,10 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeSequenceCommandBinding()
 		{
-			string jsonInjectorString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\", \"Options\":\"ToSingleton\"}]";
+			string jsonInjectorString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\", \"Options\":\"ToSingleton\"}}]";
 			injectionBinder.ConsumeBindings (jsonInjectorString);
 
-			string jsonCommandString = "[{\"Bind\":\"TestEvent\",\"To\":[\"strange.unittests.CommandWithInjection\",\"strange.unittests.CommandWithExecute\",\"strange.unittests.CommandWithoutExecute\"],\"Options\":\"InSequence\"}]";
+			string jsonCommandString = $"[{{\"Bind\":\"TestEvent\",\"To\":[\"strange.unittests.CommandWithInjection,{assemblyName}\",\"strange.unittests.CommandWithExecute,{assemblyName}\",\"strange.unittests.CommandWithoutExecute,{assemblyName}\"],\"Options\":\"InSequence\"}}]";
 			commandBinder.ConsumeBindings(jsonCommandString);
 
 			ICommandBinding binding = commandBinder.GetBinding ("TestEvent") as ICommandBinding;
@@ -197,10 +199,10 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeCommandBindingOnce()
 		{
-			string jsonInjectorString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\", \"Options\":\"ToSingleton\"}]";
+			string jsonInjectorString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\", \"Options\":\"ToSingleton\"}}]";
 			injectionBinder.ConsumeBindings (jsonInjectorString);
 
-			string jsonCommandString = "[{\"Bind\":\"TestEvent\",\"To\":[\"strange.unittests.CommandWithInjection\"],\"Options\":\"Once\"}]";
+			string jsonCommandString = $"[{{\"Bind\":\"TestEvent\",\"To\":[\"strange.unittests.CommandWithInjection,{assemblyName}\"],\"Options\":\"Once\"}}]";
 			commandBinder.ConsumeBindings(jsonCommandString);
 
 			ICommandBinding binding = commandBinder.GetBinding ("TestEvent") as ICommandBinding;
@@ -217,10 +219,10 @@ namespace strange.unittests
 		[Test]
 		public void TestRuntimeUnqualifiedCommandException()
 		{
-			string jsonInjectorString = "[{\"Bind\":\"strange.unittests.ISimpleInterface\",\"To\":\"strange.unittests.SimpleInterfaceImplementer\", \"Options\":\"ToSingleton\"}]";
+			string jsonInjectorString = $"[{{\"Bind\":\"strange.unittests.ISimpleInterface,{assemblyName}\",\"To\":\"strange.unittests.SimpleInterfaceImplementer,{assemblyName}\", \"Options\":\"ToSingleton\"}}]";
 			injectionBinder.ConsumeBindings (jsonInjectorString);
 
-			string jsonCommandString = "[{\"Bind\":\"TestEvent\",\"To\":\"CommandWithInjection\"}]";
+			string jsonCommandString = $"[{{\"Bind\":\"TestEvent,{assemblyName}\",\"To\":\"CommandWithInjection,{assemblyName}\"}}]";
 			TestDelegate testDelegate = delegate 
 			{
 				commandBinder.ConsumeBindings(jsonCommandString);

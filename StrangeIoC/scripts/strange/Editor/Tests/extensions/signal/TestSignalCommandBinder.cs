@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using NUnit.Framework;
 using strange.extensions.injector.api;
 using strange.extensions.injector.impl;
@@ -222,9 +223,10 @@ namespace strange.unittests
 		[Test]
 		public void TestSimpleRuntimeSignalCommandBinding()
 		{
+            var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 			injectionBinder.Bind<ExposedTestModel>().ToSingleton();
 
-			string jsonCommandString = "[{\"Bind\":\"strange.unittests.ExposedOneArgSignal\",\"To\":[\"strange.unittests.ExposedOneArgSignalCommand\"]}]";
+			string jsonCommandString = $"[{{\"Bind\":\"strange.unittests.ExposedOneArgSignal,{assemblyName}\",\"To\":[\"strange.unittests.ExposedOneArgSignalCommand,{assemblyName}\"]}}]";
 			commandBinder.ConsumeBindings (jsonCommandString);
 
 			ExposedTestModel testModel = injectionBinder.GetInstance<ExposedTestModel>() as ExposedTestModel;

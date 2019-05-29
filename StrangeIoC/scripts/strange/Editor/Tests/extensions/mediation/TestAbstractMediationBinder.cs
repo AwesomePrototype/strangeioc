@@ -5,6 +5,7 @@ using strange.extensions.injector.impl;
 using strange.extensions.mediation.impl;
 using strange.extensions.mediation.api;
 using System.Collections.Generic;
+using System.Reflection;
 using strange.framework.impl;
 
 
@@ -15,11 +16,12 @@ namespace strange.unittests
 	{
 		private TestMediationBinder mediationBinder;
 		private InjectionBinder injectionBinder;
-
+		private string assemblyName;
 
 		[SetUp]
 		public void SetUp()
 		{
+			assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
 			injectionBinder = new InjectionBinder ();
 			mediationBinder = new TestMediationBinder ();
 			mediationBinder.injectionBinder = injectionBinder;
@@ -164,7 +166,7 @@ namespace strange.unittests
 		[Test]
 		public void TestSimpleRuntimeBinding()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.TestView\",\"To\":\"strange.unittests.TestMediator\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.TestView,{assemblyName}\",\"To\":\"strange.unittests.TestMediator,{assemblyName}\"}}]";
 
 			mediationBinder.ConsumeBindings (jsonString);
 
@@ -179,7 +181,7 @@ namespace strange.unittests
 		[Test]
 		public void TestMultipleRuntimeBindings()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.TestView\",\"To\":\"strange.unittests.TestMediator\"}, {\"Bind\":\"strange.unittests.TestView2\",\"To\":\"strange.unittests.TestMediator2\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.TestView,{assemblyName}\",\"To\":\"strange.unittests.TestMediator,{assemblyName}\"}}, {{\"Bind\":\"strange.unittests.TestView2,{assemblyName}\",\"To\":\"strange.unittests.TestMediator2,{assemblyName}\"}}]";
 
 			mediationBinder.ConsumeBindings (jsonString);
 
@@ -201,7 +203,7 @@ namespace strange.unittests
 		[Test]
 		public void TestBindOneViewToManyMediators()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.TestView\",\"To\":[\"strange.unittests.TestMediator\",\"strange.unittests.TestMediator2\"]}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.TestView,{assemblyName}\",\"To\":[\"strange.unittests.TestMediator,{assemblyName}\",\"strange.unittests.TestMediator2,{assemblyName}\"]}}]";
 
 			mediationBinder.ConsumeBindings (jsonString);
 
@@ -217,7 +219,7 @@ namespace strange.unittests
 		[Test]
 		public void TestBindViewToMediatorSyntax()
 		{
-			string jsonString = "[{\"BindView\":\"strange.unittests.TestView\",\"ToMediator\":[\"strange.unittests.TestMediator\",\"strange.unittests.TestMediator2\"]}]";
+			string jsonString = $"[{{\"BindView\":\"strange.unittests.TestView,{assemblyName}\",\"ToMediator\":[\"strange.unittests.TestMediator,{assemblyName}\",\"strange.unittests.TestMediator2,{assemblyName}\"]}}]";
 
 			mediationBinder.ConsumeBindings (jsonString);
 
@@ -233,7 +235,7 @@ namespace strange.unittests
 		[Test]
 		public void TestBindToAbstraction()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.TestView2\",\"To\":\"strange.unittests.TestMediator\",\"ToAbstraction\":\"strange.unittests.TestView\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.TestView2,{assemblyName}\",\"To\":\"strange.unittests.TestMediator,{assemblyName}\",\"ToAbstraction\":\"strange.unittests.TestView,{assemblyName}\"}}]";
 
 			mediationBinder.ConsumeBindings (jsonString);
 			injectionBinder.Bind<ClassToBeInjected> ().To<ClassToBeInjected> ();
@@ -262,7 +264,7 @@ namespace strange.unittests
 		[Test]
 		public void TestThrowsErrorOnUnresolvedView()
 		{
-			string jsonString = "[{\"Bind\":\"TestView\",\"To\":\"strange.unittests.TestMediator\"}]";
+			string jsonString = $"[{{\"Bind\":\"TestView,{assemblyName}\",\"To\":\"strange.unittests.TestMediator,{assemblyName}\"}}]";
 
 			TestDelegate testDelegate = delegate
 			{
@@ -276,7 +278,7 @@ namespace strange.unittests
 		[Test]
 		public void TestThrowsErrorOnUnresolvedMediator()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.TestView\",\"To\":\"TestMediator\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.TestView,{assemblyName}\",\"To\":\"TestMediator,{assemblyName}\"}}]";
 
 			TestDelegate testDelegate = delegate
 			{
@@ -290,7 +292,7 @@ namespace strange.unittests
 		[Test]
 		public void TestThrowsErrorOnUnresolvedAbstraction()
 		{
-			string jsonString = "[{\"Bind\":\"strange.unittests.TestView2\",\"To\":\"strange.unittests.TestMediator\",\"ToAbstraction\":\"TestView\"}]";
+			string jsonString = $"[{{\"Bind\":\"strange.unittests.TestView2,{assemblyName}\",\"To\":\"strange.unittests.TestMediator,{assemblyName}\",\"ToAbstraction\":\"TestView,{assemblyName}\"}}]";
 
 			TestDelegate testDelegate = delegate
 			{

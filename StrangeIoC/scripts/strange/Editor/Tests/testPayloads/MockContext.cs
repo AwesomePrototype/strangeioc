@@ -1,4 +1,5 @@
-﻿using strange.extensions.context.impl;
+﻿using System.Reflection;
+using strange.extensions.context.impl;
 using strange.extensions.command.api;
 using strange.extensions.dispatcher.eventdispatcher.api;
 using strange.extensions.implicitBind.api;
@@ -72,6 +73,7 @@ namespace strange.unittests
 			mediationBinder = injectionBinder.GetInstance<IMediationBinder>() as IMediationBinder;
 			sequencer = injectionBinder.GetInstance<ISequencer>() as ISequencer;
 			implicitBinder = injectionBinder.GetInstance<IImplicitBinder>() as IImplicitBinder;
+			implicitBinder.Assembly = Assembly.GetExecutingAssembly();
 
 			(dispatcher as ITriggerProvider).AddTriggerable(commandBinder as ITriggerable);
 			(dispatcher as ITriggerProvider).AddTriggerable(sequencer as ITriggerable);

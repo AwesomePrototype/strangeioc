@@ -158,7 +158,7 @@ namespace strange.unittests
 			InjectionException ex = Assert.Throws<InjectionException>(testDelegate);
 
 			//make sure it's the right exception
-			Assert.AreEqual(ex.type, InjectionExceptionType.IMPLICIT_BINDING_IMPLEMENTOR_DOES_NOT_IMPLEMENT_INTERFACE);
+			Assert.AreEqual(ex.type, InjectionExceptionType.IMPLICIT_BINDING_TYPE_DOES_NOT_IMPLEMENT_DESIGNATED_INTERFACE);
 		}
 
 
